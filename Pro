@@ -1,0 +1,260 @@
+local a = game:GetService("Players")
+local b = game:GetService("Lighting")
+local c = game:GetService("Workspace")
+local d = game:GetService("RunService")
+local e = game:GetService("UserInputService")
+local f = game:GetService("SoundService")
+local g = game:GetService("ScriptContext")
+local h = game:GetService("LogService")
+local i = game:GetService("GuiService")
+local j = game:GetService("Stats")
+
+local k = a.LocalPlayer
+local l = {}
+
+pcall(function()
+    d:Set3dRenderingEnabled(false)
+end)
+
+pcall(function()
+    setfpscap(30)
+end)
+
+pcall(function()
+    settings().Physics.PhysicsEnvironmentalThrottle = Enum.EnviromentalPhysicsThrottle.Disabled
+    settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+end)
+
+pcall(function()
+    i:ClearError()
+end)
+
+local function m()
+    collectgarbage("collect")
+    for n = 1, 4 do
+        collectgarbage("step", 600)
+    end
+end
+
+local function o()
+    b.GlobalShadows = false
+    b.FogEnd = 9e9
+    b.Brightness = 1
+    pcall(function()
+        b.Technology = Enum.Technology.Compatibility
+    end)
+
+    for _, p in ipairs(b:GetChildren()) do
+        if p:IsA("PostEffect") or p:IsA("Atmosphere") or p:IsA("Sky") or p:IsA("Clouds") or p:IsA("SunRaysEffect") then
+            p.Enabled = false
+        end
+    end
+end
+
+local function q(r)
+    if r:IsA("ParticleEmitter") or r:IsA("Trail") or r:IsA("SelectionBox") 
+       or r:IsA("BillboardGui") or r:IsA("Light") or r:IsA("Sparkles") 
+       or r:IsA("Fire") or r:IsA("Smoke") or r:IsA("Beam") or r:IsA("Explosion") 
+       or r:IsA("Highlight") or r:IsA("Firework") then
+        r.Enabled = false
+    elseif r:IsA("Decal") or r:IsA("Texture") then
+        r.Transparency = 1
+    elseif r:IsA("BasePart") then
+        r.Material = Enum.Material.SmoothPlastic
+        r.CastShadow = false
+        r.Reflectance = 0
+        if not (k.Character and r:IsDescendantOf(k.Character)) then
+            r.CanTouch = false
+            r.CanQuery = false
+        end
+    elseif r:IsA("MeshPart") then
+        r.Material = Enum.Material.SmoothPlastic
+        r.CastShadow = false
+        r.TextureID = ""
+    elseif r:IsA("Sound") then
+        r.RollOffMaxDistance = 5
+        if not r.IsPlaying then
+            r:Stop()
+        end
+    end
+end
+
+local function s()
+    for _, t in ipairs(c:GetDescendants()) do
+        q(t)
+    end
+end
+
+local function u()
+    local v = k:FindFirstChild("PlayerGui")
+    if v then
+        for _, w in ipairs(v:GetDescendants()) do
+            if w:IsA("ImageLabel") or w:IsA("ImageButton") then
+                w.Image = ""
+            elseif w:IsA("ScreenGui") then
+                if not w.Enabled then
+                    w.ResetOnSpawn = false
+                    w:ClearAllChildren()
+                end
+            end
+        end
+    end
+end
+
+local function x()
+    for _, y in ipairs(c:GetDescendants()) do
+        if y:IsA("Humanoid") then
+            for _, z in ipairs(y:GetPlayingAnimationTracks()) do
+                z:Stop(0)
+                z:Destroy()
+            end
+        elseif y:IsA("Animator") then
+            y:Destroy()
+        end
+    end
+end
+
+local function A()
+    local B = c:FindFirstChildOfClass("Terrain")
+    if B then
+        B.WaterWaveSize = 0
+        B.WaterWaveSpeed = 0
+        B.WaterReflectance = 0
+        B.WaterTransparency = 0
+        pcall(function()
+            B:Clear()
+        end)
+    end
+end
+
+local function C()
+    local D = k.Character
+    if D and D:FindFirstChild("HumanoidRootPart") then
+        local E = D.HumanoidRootPart.Position
+        for _, F in ipairs(c:GetChildren()) do
+            if F:IsA("Model") and not a:GetPlayerFromCharacter(F) then
+                local G = F.PrimaryPart or F:FindFirstChildWhichIsA("BasePart")
+                if G and (G.Position - E).Magnitude > 400 then
+                    for _, H in ipairs(F:GetDescendants()) do
+                        if H:IsA("BasePart") then
+                            H.LocalTransparencyModifier = 1
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+local function I()
+    for _, J in ipairs(f:GetChildren()) do
+        if J:IsA("SoundEffect") then
+            J.Enabled = false
+        end
+    end
+end
+
+local function K()
+    pcall(function()
+        for _, L in ipairs(c:GetDescendants()) do
+            if L:IsA("TouchTransmitter") or L:IsA("ClickDetector") then
+                if not L.Parent or not L.Parent:IsDescendantOf(c) then
+                    L:Destroy()
+                end
+            end
+        end
+    end)
+end
+
+local function M()
+    for _, N in ipairs(c:GetDescendants()) do
+        if N:IsA("ValueBase") then
+            if #N:GetConnections("Changed") == 0 and not N.Parent then
+                N:Destroy()
+            end
+        end
+    end
+end
+
+local function HideOtherPlayers(plr)
+    if plr ~= k then
+        local function removeChar(char)
+            task.wait(0.2)
+            pcall(function()
+                char:ClearAllChildren()
+            end)
+        end
+        if plr.Character then
+            removeChar(plr.Character)
+        end
+        plr.CharacterAdded:Connect(removeChar)
+    end
+end
+
+local function N()
+    for _, plr in ipairs(a:GetPlayers()) do
+        HideOtherPlayers(plr)
+    end
+end
+
+local function O()
+    o()
+    s()
+    u()
+    x()
+    A()
+    C()
+    I()
+    K()
+    M()
+    N()
+    m()
+end
+
+O()
+
+l["PlayerAdded"] = a.PlayerAdded:Connect(function(plr)
+    HideOtherPlayers(plr)
+end)
+
+l["DescendantAdded"] = c.DescendantAdded:Connect(function(P)
+    q(P)
+end)
+
+l["ItemChanged"] = c.ItemChanged:Connect(function(Q, R)
+    if R == "Material" or R == "CastShadow" then
+        if Q:IsA("BasePart") and Q.Material ~= Enum.Material.SmoothPlastic then
+            Q.Material = Enum.Material.SmoothPlastic
+            Q.CastShadow = false
+        end
+    end
+end)
+
+l["ErrorLeak"] = g.Error:Connect(function()
+    m()
+end)
+
+l["LogHijack"] = h.MessageOut:Connect(function()
+    collectgarbage("step", 200)
+end)
+
+l["DescendantPurge"] = c.DescendantRemoving:Connect(function(S)
+    if S:IsA("BasePart") or S:IsA("Model") then
+        task.defer(function()
+            S = nil
+        end)
+    end
+end)
+
+task.spawn(function()
+    while true do
+        task.wait(10)
+        m()
+        u()
+        x()
+        C()
+        K()
+        M()
+        N()
+    end
+end)
